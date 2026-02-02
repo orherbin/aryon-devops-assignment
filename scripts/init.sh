@@ -71,7 +71,6 @@ CLUSTER_NAME=$(tf_output cluster_name)
 NAMESPACE=$(tf_output namespace)
 DEPLOY_POSTGRESQL=$(tf_output deploy_postgresql)
 DEPLOY_MONITORING=$(tf_output deploy_monitoring)
-GRAFANA_PORT=$(tf_output grafana_port)
 DB_NAME=$(tf_output postgresql_database)
 
 echo -e "${YELLOW}Configuration:${NC}"
@@ -146,45 +145,38 @@ kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=microservice -n
 echo -e "${GREEN}All pods are ready!${NC}"
 echo ""
 
-# Step 8: Set up port-forward for local access
-echo -e "${BLUE}Step 8: Setting up access to services...${NC}"
-echo -e "${YELLOW}To access the Items Service, run in a separate terminal:${NC}"
-echo -e "  kubectl port-forward svc/items-service 8080:8080 -n $NAMESPACE"
-echo -e "${GREEN}Setup complete!${NC}"
-echo ""
-
 # Print summary
 echo -e "${GREEN}========================================${NC}"
 echo -e "${GREEN}  Deployment Complete!${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo ""
-echo -e "${BLUE}Access Services:${NC}"
-echo -e "  # Items Service (run in separate terminal):"
-echo -e "  kubectl port-forward svc/items-service 8080:8080 -n $NAMESPACE"
-echo -e "  Then access: http://localhost:8080"
+echo -e "${BLUE}Access Services via Minikube Tunnel:${NC}"
+echo -e "  Run in a separate terminal:"
+echo -e "  ${YELLOW}minikube tunnel -p $CLUSTER_NAME${NC}"
 echo ""
+echo -e "  Then access:"
+echo -e "  - Items Service: http://localhost/items"
 if [ "$DEPLOY_MONITORING" = "true" ]; then
-    echo -e "  # Grafana (run in separate terminal):"
-    echo -e "  kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80"
-    echo -e "  Then access: http://localhost:3000"
+    echo -e "  - Grafana:       kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80"
+    echo -e "                   Then: http://localhost:3000"
     echo ""
     echo -e "${BLUE}Grafana Credentials:${NC}"
     echo -e "  Username: admin"
     echo -e "  Password: (set in terraform.tfvars or TF_VAR_grafana_admin_password)"
-    echo ""
 fi
+echo ""
 
-echo -e "${BLUE}Test the API:${NC}"
+echo -e "${BLUE}Test the API (after starting minikube tunnel):${NC}"
 echo -e "  # Create an item"
-echo -e "  curl -X POST http://localhost:8080/items \\"
+echo -e "  curl -X POST http://localhost/items \\"
 echo -e "    -H 'Content-Type: application/json' \\"
 echo -e "    -d '{\"name\": \"Test Item\", \"description\": \"Testing\"}'"
 echo ""
 echo -e "  # List items"
-echo -e "  curl http://localhost:8080/items"
+echo -e "  curl http://localhost/items"
 echo ""
 echo -e "${BLUE}View Metrics:${NC}"
-echo -e "  curl http://localhost:8080/metrics"
+echo -e "  curl http://localhost/metrics"
 echo ""
 
 if [ "$DEPLOY_POSTGRESQL" = "true" ]; then

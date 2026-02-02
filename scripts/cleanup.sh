@@ -5,7 +5,7 @@
 # This script:
 # 1. Deletes Helm releases
 # 2. Destroys Terraform resources (Minikube cluster)
-# 3. Optionally removes Docker images
+# 3. Removes Docker images and Terraform state
 #
 
 set -e
@@ -31,16 +31,6 @@ echo ""
 tf_output() {
     terraform -chdir="$TERRAFORM_DIR" output -raw "$1" 2>/dev/null || echo ""
 }
-
-# Prompt for confirmation
-read -p "Are you sure you want to destroy all resources? (y/N) " -n 1 -r
-echo
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo -e "${YELLOW}Cleanup cancelled.${NC}"
-    exit 0
-fi
-
-echo ""
 
 # Try to get values from terraform outputs
 CLUSTER_NAME=""
@@ -100,17 +90,11 @@ else
 fi
 echo ""
 
-# Step 4: Optional - Clean up Docker images
+# Step 4: Clean up Docker images
 echo -e "${BLUE}Step 4: Cleaning up Docker images...${NC}"
-read -p "Remove local Docker images? (y/N) " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    docker rmi items-service:latest 2>/dev/null || echo "items-service image not found"
-    docker rmi audit-service:latest 2>/dev/null || echo "audit-service image not found"
-    echo -e "${GREEN}Docker images removed!${NC}"
-else
-    echo -e "${YELLOW}Docker images kept.${NC}"
-fi
+docker rmi items-service:latest 2>/dev/null || echo "items-service image not found"
+docker rmi audit-service:latest 2>/dev/null || echo "audit-service image not found"
+echo -e "${GREEN}Docker images cleaned!${NC}"
 echo ""
 
 # Step 5: Clean up Terraform state

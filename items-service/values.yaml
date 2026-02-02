@@ -14,7 +14,7 @@ service:
   port: 8080
   targetPort: 8080
 
-# Ingress for external access (path-based routing, no host required)
+# Ingress for external access
 ingress:
   enabled: true
   className: ""
