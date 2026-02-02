@@ -1,0 +1,71 @@
+replicaCount: 1
+
+image:
+  repository: items-service
+  tag: latest
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: "items-service"
+
+# Service configuration - ClusterIP (internal), exposed via Ingress
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+
+# Ingress for external access
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  hosts:
+    - host: items.local
+      paths:
+        - path: /
+          pathType: Prefix
+
+env:
+  AUDIT_SERVICE_URL: "http://audit-service:8081"
+  DB_HOST: "postgresql"
+  DB_PORT: "5432"
+  DB_NAME: "itemsdb"
+  DB_USER: "postgres"
+
+secrets:
+  DB_PASSWORD: "postgres"
+
+resources:
+  limits:
+    cpu: 250m
+    memory: 128Mi
+  requests:
+    cpu: 50m
+    memory: 64Mi
+
+livenessProbe:
+  enabled: true
+  path: /health
+  initialDelaySeconds: 15
+  periodSeconds: 20
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  enabled: true
+  path: /health
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+metrics:
+  enabled: true
+  path: /metrics
+  serviceMonitor:
+    enabled: true
+    interval: 15s
+    scrapeTimeout: 10s
+    labels:
+      release: prometheus

@@ -1,0 +1,62 @@
+replicaCount: 1
+
+image:
+  repository: audit-service
+  tag: latest
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: "audit-service"
+
+# Service configuration - INTERNAL only via ClusterIP
+service:
+  type: ClusterIP
+  port: 8081
+  targetPort: 8081
+
+# No ingress - internal service only
+ingress:
+  enabled: false
+
+env:
+  DB_HOST: "postgresql"
+  DB_PORT: "5432"
+  DB_NAME: "itemsdb"
+  DB_USER: "postgres"
+
+secrets:
+  DB_PASSWORD: "postgres"
+
+resources:
+  limits:
+    cpu: 250m
+    memory: 128Mi
+  requests:
+    cpu: 50m
+    memory: 64Mi
+
+livenessProbe:
+  enabled: true
+  path: /health
+  initialDelaySeconds: 15
+  periodSeconds: 20
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  enabled: true
+  path: /health
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+metrics:
+  enabled: true
+  path: /metrics
+  serviceMonitor:
+    enabled: true
+    interval: 15s
+    scrapeTimeout: 10s
+    labels:
+      release: prometheus
