@@ -15,7 +15,6 @@ For this microservices architecture, I recommend implementing GitOps using ArgoC
 
 #### Proposed Pipeline
 
-
 1. Developer pushes code to GitHub
 2. GitHub Actions runs CI pipeline (lint, test, build image)
 3. Image is pushed to container registry with semantic version tag
@@ -33,8 +32,6 @@ For this microservices architecture, I recommend implementing GitOps using ArgoC
 - Provider ecosystem (supports Kubernetes, AWS, GCP, Azure)
 - Reproducible infrastructure
 - Easy to extend for cloud deployment
-
-
 
 ### Container Orchestration: Kubernetes
 
@@ -71,10 +68,17 @@ Created a single reusable `microservice` chart that all services use with differ
 - Native Kubernetes service discovery
 - AlertManager integration
 
-
 ## Summary
 
 In conclusion, ideal flow in my mind will look something like this:
+
 1. Local development using tools such as Tilt for fast "CICD".
 2. Pushes the code to master will trigger GH action that will build the image, push to ECR and deploys to staging using ArgoCD.
 3. Deployment to production are done manually for maximum control, and it's performed the same way with Argo, only by manual dispatch.
+
+## Stuff I would of add with more time:
+
+- Stress test script to test the system under load.
+- Troubleshooting guide of common issues
+- Change to local chart instead of bitnami since its about to be deprecated
+- Implement proper image versioning mechanism
